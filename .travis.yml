@@ -1,14 +1,8 @@
 language: go
 go:
-- 1.5.2
-
-install:
-- make install_dependencies
+- 1.13
 
 script:
-- make test
-- make vet
-- make errcheck
-- make fmt
+- go test ./...
 
 sudo: false

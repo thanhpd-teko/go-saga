@@ -3,7 +3,6 @@ package saga
 import (
 	"context"
 	"reflect"
-	"strconv"
 )
 
 // DefaultSEC is default SEC use by package method
@@ -88,13 +87,13 @@ func (e *ExecutionCoordinator) MustFindParamType(name string) reflect.Type {
 
 // StartSaga start a new saga, returns the saga was started in Default SEC.
 // This method need execute context and UNIQUE id to identify saga instance.
-func StartSaga(ctx context.Context, id uint64, provider LogProvider) *Saga {
+func StartSaga(ctx context.Context, id string, provider LogProvider) *Saga {
 	return DefaultSEC.StartSaga(ctx, id, provider)
 }
 
 // StartSaga start a new saga, returns the saga was started.
 // This method need execute context and UNIQUE id to identify saga instance.
-func (e *ExecutionCoordinator) StartSaga(ctx context.Context, id uint64, provider LogProvider) *Saga {
+func (e *ExecutionCoordinator) StartSaga(ctx context.Context, id string, provider LogProvider) *Saga {
 	// create new log
 	storage := GetLogStorage(provider)
 	s := &Saga{
@@ -102,7 +101,7 @@ func (e *ExecutionCoordinator) StartSaga(ctx context.Context, id uint64, provide
 		id:      id,
 		context: ctx,
 		sec:     e,
-		logID:   LogPrefix + strconv.FormatInt(int64(id), 10),
+		logID:   LogPrefix + id,
 	}
 	s.startSaga()
 	return s

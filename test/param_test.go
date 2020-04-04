@@ -1,9 +1,9 @@
 package saga_test
 
 import (
+	"context"
 	"fmt"
-	"github.com/lysu/go-saga"
-	"golang.org/x/net/context"
+	"github.com/thanhpd-teko/go-saga"
 	"reflect"
 	"testing"
 )

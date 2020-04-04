@@ -1,9 +1,7 @@
 package saga
 
 import (
-	"fmt"
-	"github.com/juju/errors"
-	"golang.org/x/net/context"
+	"context"
 	"reflect"
 	"strconv"
 )
@@ -88,31 +86,19 @@ func (e *ExecutionCoordinator) MustFindParamType(name string) reflect.Type {
 	return typ
 }
 
-func (e *ExecutionCoordinator) StartCoordinator() error {
-	logIDs, err := LogStorage().LogIDs()
-	if err != nil {
-		return errors.Annotate(err, "Fetch logs failure")
-	}
-	for _, logID := range logIDs {
-		lastLogData, err := LogStorage().LastLog(logID)
-		if err != nil {
-			return errors.Annotate(err, "Fetch last log panic")
-		}
-		fmt.Println(lastLogData)
-	}
-	return nil
-}
-
 // StartSaga start a new saga, returns the saga was started in Default SEC.
 // This method need execute context and UNIQUE id to identify saga instance.
-func StartSaga(ctx context.Context, id uint64) *Saga {
-	return DefaultSEC.StartSaga(ctx, id)
+func StartSaga(ctx context.Context, id uint64, provider LogProvider) *Saga {
+	return DefaultSEC.StartSaga(ctx, id, provider)
 }
 
 // StartSaga start a new saga, returns the saga was started.
 // This method need execute context and UNIQUE id to identify saga instance.
-func (e *ExecutionCoordinator) StartSaga(ctx context.Context, id uint64) *Saga {
+func (e *ExecutionCoordinator) StartSaga(ctx context.Context, id uint64, provider LogProvider) *Saga {
+	// create new log
+	storage := GetLogStorage(provider)
 	s := &Saga{
+		storage: storage,
 		id:      id,
 		context: ctx,
 		sec:     e,

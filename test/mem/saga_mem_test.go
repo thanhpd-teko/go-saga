@@ -1,11 +1,10 @@
 package saga_test
 
 import (
+	"context"
 	"fmt"
-	"github.com/lysu/go-saga"
-	_ "github.com/lysu/go-saga/storage/memory"
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/net/context"
+	"github.com/thanhpd-teko/go-saga"
 	"testing"
 )
 
@@ -33,7 +32,8 @@ func TestAllSuccess(t *testing.T) {
 	ctx := context.Background()
 
 	var sagaID uint64 = 1
-	saga.StartSaga(ctx, sagaID).
+	startSaga := saga.StartSaga(ctx, sagaID, saga.Memory)
+	startSaga.
 		ExecSub("deduce", from, amount).
 		ExecSub("deposit", to, amount).
 		EndSaga()
@@ -41,7 +41,7 @@ func TestAllSuccess(t *testing.T) {
 	assert.Equal(t, 100, memDB[from])
 	assert.Equal(t, 100, memDB[to])
 
-	logs, err := saga.LogStorage().Lookup("saga_1")
+	logs, err := startSaga.GetLog().Lookup()
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(logs))
 
@@ -58,7 +58,8 @@ func TestDepositFail(t *testing.T) {
 	ctx := context.Background()
 
 	var sagaID uint64 = 1
-	saga.StartSaga(ctx, sagaID).
+	startSaga := saga.StartSaga(ctx, sagaID, saga.Memory)
+	startSaga.
 		ExecSub("deduce", from, amount).
 		ExecSub("deposit", to, amount).
 		EndSaga()
@@ -67,7 +68,7 @@ func TestDepositFail(t *testing.T) {
 	assert.Equal(t, 200, memDB[from])
 	assert.Equal(t, -100, memDB[to]) // BUG fix test
 
-	logs, err := saga.LogStorage().Lookup("saga_1")
+	logs, err := startSaga.GetLog().Lookup()
 	assert.NoError(t, err)
 	t.Logf("%v", logs)
 	assert.Equal(t, 0, len(logs))
